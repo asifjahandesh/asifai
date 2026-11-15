@@ -1,0 +1,460 @@
+/* ASIF AI Cyberpunk Theme for Excel Desktop Task Pane */
+:root {
+  --bg-primary: #070b09;
+  --bg-surface: #0b120e;
+  --bg-card: rgba(11, 18, 14, 0.95);
+  --bg-input: #070c09;
+  --bg-user-bubble: rgba(5, 46, 22, 0.7);
+  --bg-assistant-bubble: #0c130f;
+  --bg-hover: rgba(34, 197, 94, 0.08);
+
+  --text-primary: #e8f5ec;
+  --text-heading: #ffffff;
+  --text-muted: #94a3b8;
+  --text-subtle: #475569;
+  --text-accent: #86efac;
+  --text-neon: #4ade80;
+
+  --border-primary: #052e16;
+  --border-strong: rgba(20, 83, 45, 0.8);
+  --border-neon: #22c55e;
+  --border-bubble: #14532d;
+
+  --accent-green: #22c55e;
+  --accent-green-hover: #4ade80;
+  --accent-glow: rgba(34, 197, 94, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+  background-image: 
+    linear-gradient(rgba(47, 119, 73, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47, 119, 73, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Header */
+.app-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-primary);
+  background: rgba(8, 13, 10, 0.95);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #000;
+  border: 1px solid var(--border-neon);
+  box-shadow: 0 0 12px var(--accent-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-neon);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+.brand-sub {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-neon);
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(5, 46, 22, 0.4);
+  border: 1px solid var(--border-strong);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-neon);
+  box-shadow: 0 0 8px var(--text-neon);
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  color: var(--text-heading);
+  border-color: var(--accent-green);
+  background: var(--bg-hover);
+}
+
+/* Excel Context Banner */
+.excel-context-bar {
+  padding: 8px 14px;
+  background: rgba(11, 18, 14, 0.9);
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.context-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-tag {
+  color: var(--text-neon);
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.btn-pill {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--text-neon);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pill:hover {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: var(--accent-green);
+}
+
+/* Quick Action Buttons Toolbar */
+.toolbar-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-primary);
+  background: rgba(7, 11, 9, 0.8);
+  flex-shrink: 0;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  border-color: var(--accent-green);
+  color: var(--text-neon);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* Chat Scroll Area */
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-box {
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-card);
+  padding: 16px;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.08);
+  text-align: center;
+  margin-top: 10px;
+}
+
+.welcome-title {
+  color: var(--text-heading);
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.welcome-desc {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.welcome-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-chip {
+  text-align: left;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.prompt-chip:hover {
+  border-color: var(--accent-green);
+  color: var(--text-neon);
+}
+
+/* Messages */
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 92%;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+}
+
+.message.assistant {
+  align-self: flex-start;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.message.user .bubble {
+  background: var(--bg-user-bubble);
+  border: 1px solid var(--border-bubble);
+  color: #f0fdf4;
+}
+
+.message.assistant .bubble {
+  background: var(--bg-assistant-bubble);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Formula Insertion Card */
+.formula-card {
+  margin-top: 8px;
+  background: #05160e;
+  border: 1px solid var(--accent-green);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.15);
+}
+
+.formula-card-title {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-neon);
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.formula-code {
+  background: #000;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+  color: #4ade80;
+  border: 1px solid var(--border-strong);
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.formula-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-insert-formula {
+  background: var(--accent-green);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  flex: 1;
+  transition: background 0.2s;
+}
+
+.btn-insert-formula:hover {
+  background: var(--accent-green-hover);
+}
+
+/* Input Area */
+.input-section {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-primary);
+  background: rgba(8, 13, 10, 0.95);
+  flex-shrink: 0;
+}
+
+.input-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.08);
+  transition: border-color 0.2s;
+}
+
+.input-box:focus-within {
+  border-color: var(--accent-green);
+}
+
+textarea#userInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text-heading);
+  font-size: 12px;
+  line-height: 1.4;
+  height: 48px;
+}
+
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.model-tag {
+  font-size: 10px;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-send {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent-green);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.btn-send:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Notifications */
+.notification {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.notification.error {
+  background: rgba(159, 18, 57, 0.25);
+  border: 1px solid rgba(225, 29, 72, 0.6);
+  color: #fecdd3;
+}
+
+.notification.success {
+  background: rgba(6, 78, 59, 0.4);
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  color: #86efac;
+}

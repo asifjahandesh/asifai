@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASIF AI | Excel Intelligence</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="taskpane.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <img src="assets/icon.svg" alt="ASIF AI" />
+      </div>
+      <div>
+        <div class="brand-name">ASIF AI</div>
+        <div class="brand-sub">INTELLIGENCE SYSTEM</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-badge">
+        <span class="status-dot"></span> SMART
+      </div>
+      <button id="btnNewChat" class="btn-icon" title="New Conversation">+ New</button>
+    </div>
+  </header>
+
+  <!-- Excel Selected Range Status Bar -->
+  <div class="excel-context-bar">
+    <div class="context-info">
+      <span>Range:</span>
+      <span id="currentSelection" class="context-tag">Click 'Read Selection'</span>
+    </div>
+    <button id="btnRefreshSelection" class="btn-pill">Read Selection</button>
+  </div>
+
+  <!-- Quick Actions Toolbar -->
+  <div class="toolbar-actions">
+    <button id="btnAnalyze" class="action-btn" title="Analyze active selection">
+      <span>📊</span> Analyze Data
+    </button>
+    <button id="btnExplainFormula" class="action-btn" title="Explain formula in active cell">
+      <span>fx</span> Explain Formula
+    </button>
+    <button id="btnSuggestFormula" class="action-btn" title="Ask AI for an Excel formula">
+      <span>💡</span> Formula Help
+    </button>
+  </div>
+
+  <!-- Chat / Content Area -->
+  <main id="chatContainer" class="chat-container">
+    <div id="welcomeBox" class="welcome-box">
+      <div class="welcome-title">ASIF AI for Excel</div>
+      <div class="welcome-desc">
+        Select cells in your worksheet to inspect values, generate complex formulas, or diagnose calculations with Gridex Smart AI.
+      </div>
+      <div class="welcome-prompts">
+        <button class="prompt-chip" data-prompt="Analyze the selected data and identify key patterns, trends, or outliers.">
+          📊 Analyze selected data for trends &amp; outliers
+        </button>
+        <button class="prompt-chip" data-prompt="Write an Excel formula to calculate total sum where quantity exceeds threshold.">
+          ⚡ Generate a conditional calculation formula
+        </button>
+        <button class="prompt-chip" data-prompt="Explain the formula in the active cell step-by-step.">
+          🔍 Explain the active cell's formula
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Bar -->
+  <div id="notificationArea" style="padding: 0 14px;"></div>
+
+  <!-- Input Area -->
+  <footer class="input-section">
+    <div class="input-box">
+      <textarea id="userInput" placeholder="Ask ASIF AI about your Excel data or formulas..."></textarea>
+      <div class="input-footer">
+        <div class="model-tag">
+          <span>✨</span> Gridex Smart
+        </div>
+        <button id="btnSend" class="btn-send" title="Send message" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>

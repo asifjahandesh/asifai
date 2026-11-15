@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+  xsi:type="TaskPaneApp">
+
+  <!-- Add-in Metadata -->
+  <Id>7eabb1e3-ae52-4718-83ce-c6ad24c209d1</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>ASIF AI</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="ASIF AI" />
+  <Description DefaultValue="Private AI workspace for Excel powered by Gridex Smart." />
+  <IconUrl DefaultValue="https://localhost:3001/excel-addin/assets/icon.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:3001/excel-addin/assets/icon.png" />
+  <SupportUrl DefaultValue="https://localhost:3001" />
+  <AppDomains>
+    <AppDomain>https://localhost:3001</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Workbook" />
+  </Hosts>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://localhost:3001/excel-addin/taskpane.html" />
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Workbook">
+        <DesktopFormFactor>
+          <!-- Function file for ribbon button commands -->
+          <FunctionFile resid="Commands.Url" />
+
+          <!-- Custom Ribbon Tab -->
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <CustomTab id="AsifAiTab">
+              <Group id="AsifAiGroup">
+                <Label resid="GroupLabel" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16" />
+                  <bt:Image size="32" resid="Icon.32" />
+                  <bt:Image size="80" resid="Icon.80" />
+                </Icon>
+
+                <!-- Command 1: Open ASIF AI Task Pane -->
+                <Control xsi:type="Button" id="OpenTaskpaneButton">
+                  <Label resid="OpenTaskpaneLabel" />
+                  <Supertip>
+                    <Title resid="OpenTaskpaneLabel" />
+                    <Description resid="OpenTaskpaneTip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>AsifAiTaskpane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+
+                <!-- Command 2: Analyze Selection -->
+                <Control xsi:type="Button" id="AnalyzeSelectionButton">
+                  <Label resid="AnalyzeSelectionLabel" />
+                  <Supertip>
+                    <Title resid="AnalyzeSelectionLabel" />
+                    <Description resid="AnalyzeSelectionTip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>AsifAiTaskpane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+
+                <!-- Command 3: Explain Formula -->
+                <Control xsi:type="Button" id="ExplainFormulaButton">
+                  <Label resid="ExplainFormulaLabel" />
+                  <Supertip>
+                    <Title resid="ExplainFormulaLabel" />
+                    <Description resid="ExplainFormulaTip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>AsifAiTaskpane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+
+              </Group>
+              <Label resid="TabLabel" />
+            </CustomTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16" DefaultValue="https://localhost:3001/excel-addin/assets/icon.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://localhost:3001/excel-addin/assets/icon.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://localhost:3001/excel-addin/assets/icon.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Commands.Url" DefaultValue="https://localhost:3001/excel-addin/commands.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3001/excel-addin/taskpane.html" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="TabLabel" DefaultValue="ASIF AI" />
+        <bt:String id="GroupLabel" DefaultValue="Intelligence System" />
+        <bt:String id="OpenTaskpaneLabel" DefaultValue="Open ASIF AI" />
+        <bt:String id="AnalyzeSelectionLabel" DefaultValue="Analyze Selection" />
+        <bt:String id="ExplainFormulaLabel" DefaultValue="Explain Formula" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="OpenTaskpaneTip" DefaultValue="Open the ASIF AI intelligence task pane." />
+        <bt:String id="AnalyzeSelectionTip" DefaultValue="Inspect and analyze selected Excel worksheet data with Gridex Smart AI." />
+        <bt:String id="ExplainFormulaTip" DefaultValue="Explain the formula in the active cell using plain English." />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

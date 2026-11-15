@@ -1,0 +1,17 @@
+{
+  "name": "asif-ai-excel-addin",
+  "version": "1.0.0",
+  "description": "ASIF AI Microsoft Excel Desktop Add-in powered by Gridex Smart",
+  "scripts": {
+    "validate": "npx office-addin-manifest validate manifest.xml",
+    "sideload": "npx office-addin-debugging start manifest.xml desktop --app excel",
+    "stop": "npx office-addin-debugging stop manifest.xml"
+  },
+  "dependencies": {
+    "@microsoft/office-js": "^1.1.99"
+  },
+  "devDependencies": {
+    "office-addin-debugging": "^5.1.0",
+    "office-addin-manifest": "^6.2.0"
+  }
+}
