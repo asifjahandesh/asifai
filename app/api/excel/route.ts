@@ -66,6 +66,19 @@ export async function POST(request: NextRequest) {
   let body: {
     message?: string;
     conversationId?: string | null;
+    mode?: "agent" | "chat";
+    workbookContext?: {
+      worksheets?: Array<{
+        name: string;
+        rowCount: number;
+        columnCount: number;
+        address: string;
+        headers: string[];
+        sampleRows?: any[][];
+        inferredTypes?: Record<string, string>;
+      }>;
+      activeWorksheet?: string;
+    };
     excelContext?: {
       worksheet?: string;
       address?: string;
@@ -74,7 +87,7 @@ export async function POST(request: NextRequest) {
       headers?: string[];
       preview?: any[][];
       formulas?: any[][];
-      action?: "analyze" | "explain_formula" | "generate_formula" | "general";
+      action?: "analyze" | "explain_formula" | "generate_formula" | "general" | "agent";
     };
   };
 
@@ -86,25 +99,99 @@ export async function POST(request: NextRequest) {
 
   const userMessage = body.message?.trim() || "";
   const excelContext = body.excelContext;
+  const workbookContext = body.workbookContext;
+  const isAgentMode = body.mode === "agent" || excelContext?.action === "agent";
 
-  if (!userMessage && !excelContext) {
+  if (!userMessage && !excelContext && !workbookContext) {
     return jsonError("No message or Excel context provided.");
   }
 
-  // Construct structured AI prompt incorporating Excel context
-  let systemPrompt = `You are ASIF AI, an elite personal intelligence system and expert Microsoft Excel consultant.
-You assist users with Microsoft Excel data analysis, advanced modeling, and formula generation.
-Rules:
+  // Base system instructions with specialized Domain Intelligence (Textile, RMG, Industrial Planning & Automation)
+  let systemPrompt = `You are ASIF AI, an elite Autonomous Microsoft Excel Automation Agent and industrial operations expert.
+You assist users with Microsoft Excel data analysis, advanced modeling, formula generation, and automated workbook creation.
+
+### DOMAIN EXPERTISE (Textile, RMG, Manufacturing, Operations & Planning)
+Recognize common industry fields and KPIs:
+- Buyer, Order No / PO, Style, Item, Fabric, Color, Season
+- Order Qty, Cut Qty, Sew Qty, Pack Qty, Shipped Qty, Variance, Efficiency %, Wastage %
+- Delivery Date, Ex-Factory Date, Shipment Date, Lead Time, Status, Risk Level
+- Yarn Consumption, Fabric Consumption, Inventory Stock, Material Shortages
+
+${isAgentMode ? `### AGENT MODE INSTRUCTIONS:
+The user wants you to PLAN AND EXECUTE concrete actions inside their Excel workbook.
+You must analyze their instruction against the workbook structure and return BOTH an explanation AND an actionable, structured execution plan in JSON.
+
+Output format requirement:
+1. Provide a concise, professional explanation of your understanding and planned actions.
+2. If actions should be executed in Excel, provide a JSON block enclosed strictly between [ACTION_PLAN] and [/ACTION_PLAN]:
+[ACTION_PLAN]
+{
+  "summary": "Brief description of the action plan",
+  "requiresConfirmation": boolean (true if overwriting or creating heavy reports, false for simple non-destructive additions),
+  "actions": [
+    {
+      "type": "create_worksheet" | "write_range" | "format_range" | "create_chart" | "create_table" | "autofit" | "highlight_variance",
+      "worksheet": "Target Worksheet Name",
+      "address": "A1:E10",
+      "values": [[...]],
+      "formulas": [[...]],
+      "header": string,
+      "format": {
+        "bold": boolean,
+        "fontSize": number,
+        "fontColor": "#hex",
+        "fillColor": "#hex",
+        "horizontalAlignment": "Center" | "Left" | "Right",
+        "numberFormat": "0.00%" | "$#,##0" | "#,##0" | "yyyy-mm-dd"
+      },
+      "chart": {
+        "chartType": "ColumnClustered" | "Line" | "Pie" | "BarClustered",
+        "dataRange": "A4:D14",
+        "title": "Chart Title",
+        "position": "G4",
+        "width": 480,
+        "height": 280
+      }
+    }
+  ]
+}
+[/ACTION_PLAN]
+
+Rules for Actions:
+- For "create_worksheet", specify "worksheet": "New Sheet Name".
+- For "write_range", provide "values" and/or "formulas" as 2D arrays matching the "address". You can use standard Excel formulas (e.g. "=SUM(C5:C15)", "=AVERAGE(D5:D15)", "=C5-D5").
+- For KPIs, write KPI cards with clear metric names and calculated sums or ratios.
+- For summary reports, write clean tables with titles, bold headers, dark or styled header fills, proper number formatting, and total rows.
+- For "create_chart", use valid Excel chartTypes: "ColumnClustered", "Line", "Pie", "BarClustered".
+` : `### CHAT & FORMULA ASSISTANT MODE:
 1. Provide concise, highly accurate, professional responses.
 2. When asked for an Excel formula, always provide the exact formula clearly formatted in a markdown code block, and follow it with an EXCEL_FORMULA block:
 [FORMULA]=YOUR_FORMULA_HERE[/FORMULA]
 so the Excel Add-in can automatically detect and insert it upon user approval.
 3. When explaining formulas, break down the component functions (e.g., INDEX, MATCH, XLOOKUP, SUMIFS) and describe their logic and purpose simply.
-4. When analyzing data tables, highlight anomalies, statistical trends, outliers, or industrial KPIs.`;
+4. When analyzing data tables, highlight anomalies, statistical trends, outliers, or industrial KPIs.`}
+`;
 
   let promptContent = userMessage;
 
-  if (excelContext) {
+  // Append full workbook context if provided
+  if (workbookContext && workbookContext.worksheets && workbookContext.worksheets.length > 0) {
+    const sheetSummaries = workbookContext.worksheets.map(ws => {
+      let desc = `Worksheet "${ws.name}": Range ${ws.address} (${ws.rowCount} rows × ${ws.columnCount} cols)`;
+      if (ws.headers && ws.headers.length > 0) {
+        desc += `\n  Headers: [${ws.headers.join(", ")}]`;
+      }
+      if (ws.inferredTypes && Object.keys(ws.inferredTypes).length > 0) {
+        desc += `\n  Detected Column Types: ${JSON.stringify(ws.inferredTypes)}`;
+      }
+      if (ws.sampleRows && ws.sampleRows.length > 0) {
+        desc += `\n  Sample Data (first ${ws.sampleRows.length} rows):\n  ${JSON.stringify(ws.sampleRows.slice(0, 8))}`;
+      }
+      return desc;
+    }).join("\n\n");
+
+    promptContent = `[WORKBOOK CONTEXT]\nActive Worksheet: "${workbookContext.activeWorksheet || "Unknown"}"\n\n${sheetSummaries}\n\n[USER INSTRUCTION]\n${userMessage}`;
+  } else if (excelContext) {
     const contextDetails: string[] = [];
     if (excelContext.worksheet) contextDetails.push(`Worksheet: "${excelContext.worksheet}"`);
     if (excelContext.address) contextDetails.push(`Selected Range: ${excelContext.address}`);
@@ -124,7 +211,7 @@ so the Excel Add-in can automatically detect and insert it upon user approval.
       contextDetails.push(`Selected Data Values (JSON matrix):\n${JSON.stringify(excelContext.preview.slice(0, 50))}`);
     }
 
-    promptContent = `[EXCEL CONTEXT]\n${contextDetails.join("\n")}\n\n[USER QUERY]\n${userMessage || "Please analyze this selection."}`;
+    promptContent = `[EXCEL SELECTION CONTEXT]\n${contextDetails.join("\n")}\n\n[USER QUERY]\n${userMessage || "Please analyze this selection."}`;
   }
 
   let conversationId = body.conversationId || null;
@@ -137,7 +224,7 @@ so the Excel Add-in can automatically detect and insert it upon user approval.
         if (!existing) conversationId = null;
       }
       if (!conversationId) {
-        const title = (userMessage || "Excel Analysis").slice(0, 72);
+        const title = (userMessage || "Excel Automation").slice(0, 72);
         const { data: convData } = await supabaseClient.from("conversations").insert({ user_id: authenticatedUser.id, title }).select("id").single();
         if (convData) conversationId = convData.id;
       }
@@ -192,13 +279,23 @@ so the Excel Add-in can automatically detect and insert it upon user approval.
     return jsonError("Gridex returned an empty response.", 502);
   }
 
+  // Detect Action Plan if present
+  let actionPlan = null;
+  const actionPlanMatch = answer.match(/\[ACTION_PLAN\]([\s\S]*?)\[\/ACTION_PLAN\]/);
+  if (actionPlanMatch && actionPlanMatch[1]) {
+    try {
+      actionPlan = JSON.parse(actionPlanMatch[1].trim());
+    } catch {
+      // Non-fatal if model outputted malformed JSON
+    }
+  }
+
   // Detect generated formula if present
   let detectedFormula: string | null = null;
   const formulaMatch = answer.match(/\[FORMULA\]([\s\S]*?)\[\/FORMULA\]/);
   if (formulaMatch && formulaMatch[1]) {
     detectedFormula = formulaMatch[1].trim();
   } else {
-    // Check for inline formula pattern like `=SUM(...)` or ````excel\n=...```
     const codeBlockMatch = answer.match(/```(?:excel|plaintext)?\s*\n(=[^\n]+)\n```/);
     if (codeBlockMatch && codeBlockMatch[1]) {
       detectedFormula = codeBlockMatch[1].trim();
@@ -218,9 +315,13 @@ so the Excel Add-in can automatically detect and insert it upon user approval.
     } catch {}
   }
 
+  // Clean the human-readable explanation by stripping raw [ACTION_PLAN] tag
+  const cleanedContent = answer.replace(/\[ACTION_PLAN\][\s\S]*?\[\/ACTION_PLAN\]/, "").trim();
+
   return jsonResponse({
     conversationId,
-    content: answer,
+    content: cleanedContent || answer,
+    actionPlan,
     detectedFormula,
   });
 }

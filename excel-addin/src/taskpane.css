@@ -1,4 +1,4 @@
-/* ASIF AI Cyberpunk Theme for Excel Desktop Task Pane */
+/* ASIF AI Cyberpunk Theme for Excel Desktop Task Pane & Automation Agent */
 :root {
   --bg-primary: #070b09;
   --bg-surface: #0b120e;
@@ -52,7 +52,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border-primary);
   background: rgba(8, 13, 10, 0.95);
   backdrop-filter: blur(8px);
@@ -62,12 +62,12 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   background: #000;
   border: 1px solid var(--border-neon);
@@ -90,39 +90,46 @@ body {
   letter-spacing: 0.12em;
   color: var(--text-neon);
   text-shadow: 0 0 12px var(--accent-glow);
+  line-height: 1.1;
 }
 
 .brand-sub {
   font-size: 8px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   color: var(--text-muted);
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.status-badge {
+/* Mode Toggle Buttons */
+.mode-toggle {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-neon);
-  padding: 3px 8px;
-  border-radius: 20px;
-  background: rgba(5, 46, 22, 0.4);
+  background: #040705;
   border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 2px;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-neon);
-  box-shadow: 0 0 8px var(--text-neon);
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: var(--accent-green);
+  color: #000;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 
 .btn-icon {
@@ -144,7 +151,7 @@ body {
 
 /* Excel Context Banner */
 .excel-context-bar {
-  padding: 8px 14px;
+  padding: 7px 12px;
   background: rgba(11, 18, 14, 0.9);
   border-bottom: 1px solid var(--border-primary);
   display: flex;
@@ -157,17 +164,23 @@ body {
 .context-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.context-label {
+  font-size: 10px;
+  color: var(--text-subtle);
+}
+
 .context-tag {
   color: var(--text-neon);
   font-weight: 600;
-  font-family: monospace;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 10.5px;
 }
 
 .btn-pill {
@@ -175,11 +188,12 @@ body {
   border: 1px solid var(--border-strong);
   color: var(--text-neon);
   border-radius: 12px;
-  padding: 3px 10px;
+  padding: 3px 9px;
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-pill:hover {
@@ -190,27 +204,28 @@ body {
 /* Quick Action Buttons Toolbar */
 .toolbar-actions {
   display: flex;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 5px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--border-primary);
-  background: rgba(7, 11, 9, 0.8);
+  background: rgba(7, 11, 9, 0.85);
   flex-shrink: 0;
 }
 
 .action-btn {
   flex: 1;
-  padding: 6px 8px;
+  padding: 5px 6px;
   background: var(--bg-surface);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10.5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .action-btn:hover {
@@ -223,7 +238,7 @@ body {
 .chat-container {
   flex: 1;
   overflow-y: auto;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -236,21 +251,22 @@ body {
   padding: 16px;
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.08);
   text-align: center;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .welcome-title {
   color: var(--text-heading);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   margin-bottom: 6px;
+  letter-spacing: 0.02em;
 }
 
 .welcome-desc {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 11.5px;
   line-height: 1.5;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .welcome-prompts {
@@ -269,18 +285,20 @@ body {
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
+  line-height: 1.4;
 }
 
 .prompt-chip:hover {
   border-color: var(--accent-green);
   color: var(--text-neon);
+  background: rgba(34, 197, 94, 0.05);
 }
 
 /* Messages */
 .message {
   display: flex;
   flex-direction: column;
-  max-width: 92%;
+  max-width: 95%;
   animation: fadeIn 0.2s ease;
 }
 
@@ -295,6 +313,7 @@ body {
 
 .message.assistant {
   align-self: flex-start;
+  width: 100%;
 }
 
 .bubble {
@@ -303,6 +322,7 @@ body {
   line-height: 1.55;
   word-break: break-word;
   white-space: pre-wrap;
+  font-size: 12px;
 }
 
 .message.user .bubble {
@@ -315,6 +335,134 @@ body {
   background: var(--bg-assistant-bubble);
   border: 1px solid var(--border-primary);
   color: var(--text-primary);
+}
+
+/* Action Plan Card (Agent Mode) */
+.plan-card {
+  margin-top: 10px;
+  background: #06110a;
+  border: 1px solid var(--accent-green);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+}
+
+.plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.plan-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-neon);
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.plan-tag {
+  font-size: 9px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid var(--border-strong);
+  color: var(--text-neon);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.plan-summary {
+  font-size: 12px;
+  color: var(--text-heading);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.plan-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.plan-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: #020704;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+}
+
+.plan-step.in-progress {
+  border-color: #fbbf24;
+  color: #fef3c7;
+}
+
+.plan-step.completed {
+  border-color: var(--accent-green);
+  color: var(--text-neon);
+}
+
+.plan-step.failed {
+  border-color: #f87171;
+  color: #fecdd3;
+}
+
+.step-icon {
+  font-size: 12px;
+}
+
+.step-desc {
+  flex: 1;
+  word-break: break-word;
+}
+
+.plan-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-execute-plan {
+  flex: 1;
+  background: var(--accent-green);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-execute-plan:hover {
+  background: var(--accent-green-hover);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+}
+
+.btn-cancel-plan {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.btn-cancel-plan:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-heading);
 }
 
 /* Formula Insertion Card */
@@ -374,7 +522,7 @@ body {
 
 /* Input Area */
 .input-section {
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-top: 1px solid var(--border-primary);
   background: rgba(8, 13, 10, 0.95);
   flex-shrink: 0;
@@ -418,6 +566,15 @@ textarea#userInput {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.agent-mode-tag {
+  color: var(--text-neon);
+  background: rgba(34, 197, 94, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 9px;
 }
 
 .btn-send {

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASIF AI | Excel Intelligence</title>
+  <title>ASIF AI | Excel Automation Agent</title>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
   <link rel="stylesheet" href="taskpane.css" />
 </head>
@@ -17,55 +17,57 @@
       </div>
       <div>
         <div class="brand-name">ASIF AI</div>
-        <div class="brand-sub">INTELLIGENCE SYSTEM</div>
+        <div class="brand-sub">AUTONOMOUS AGENT</div>
       </div>
     </div>
     <div class="header-actions">
-      <div class="status-badge">
-        <span class="status-dot"></span> SMART
+      <!-- Mode Toggle: Chat vs Agent Mode -->
+      <div class="mode-toggle">
+        <button id="modeChat" class="mode-btn" title="Chat & Formula Assistant">Chat</button>
+        <button id="modeAgent" class="mode-btn active" title="Autonomous Excel Automation Agent">⚡ Agent</button>
       </div>
-      <button id="btnNewChat" class="btn-icon" title="New Conversation">+ New</button>
+      <button id="btnNewChat" class="btn-icon" title="New Session">+ New</button>
     </div>
   </header>
 
-  <!-- Excel Selected Range Status Bar -->
+  <!-- Excel Workbook & Active Selection Status Bar -->
   <div class="excel-context-bar">
     <div class="context-info">
-      <span>Range:</span>
-      <span id="currentSelection" class="context-tag">Click 'Read Selection'</span>
+      <span class="context-label">Context:</span>
+      <span id="currentSelection" class="context-tag">Scanning workbook...</span>
     </div>
-    <button id="btnRefreshSelection" class="btn-pill">Read Selection</button>
+    <button id="btnScanWorkbook" class="btn-pill" title="Read all worksheets & schema">Scan Workbook</button>
   </div>
 
-  <!-- Quick Actions Toolbar -->
+  <!-- Agent Quick Commands Toolbar -->
   <div class="toolbar-actions">
-    <button id="btnAnalyze" class="action-btn" title="Analyze active selection">
-      <span>📊</span> Analyze Data
+    <button id="btnMgmtSummary" class="action-btn" title="Create Executive Management Summary">
+      <span>📊</span> Management Summary
     </button>
-    <button id="btnExplainFormula" class="action-btn" title="Explain formula in active cell">
-      <span>fx</span> Explain Formula
+    <button id="btnVarianceReport" class="action-btn" title="Highlight Negative Variances">
+      <span>🎯</span> Variance &amp; KPIs
     </button>
-    <button id="btnSuggestFormula" class="action-btn" title="Ask AI for an Excel formula">
-      <span>💡</span> Formula Help
+    <button id="btnFindDuplicates" class="action-btn" title="Find duplicate entries or orders">
+      <span>🔍</span> Audit &amp; Duplicates
     </button>
   </div>
 
   <!-- Chat / Content Area -->
   <main id="chatContainer" class="chat-container">
     <div id="welcomeBox" class="welcome-box">
-      <div class="welcome-title">ASIF AI for Excel</div>
+      <div class="welcome-title">ASIF AI Autonomous Agent</div>
       <div class="welcome-desc">
-        Select cells in your worksheet to inspect values, generate complex formulas, or diagnose calculations with Gridex Smart AI.
+        Direct ASIF AI using natural language. It will inspect your workbook, formulate an execution plan, and perform operations directly inside Excel via Office.js.
       </div>
       <div class="welcome-prompts">
-        <button class="prompt-chip" data-prompt="Analyze the selected data and identify key patterns, trends, or outliers.">
-          📊 Analyze selected data for trends &amp; outliers
+        <button class="prompt-chip" data-prompt="Analyze all data in this workbook. Create a new sheet named Management Summary. Show total production, order-wise performance, monthly trends, top 10 orders, exceptions and charts.">
+          🚀 <strong>Full Management Summary:</strong> KPIs, order performance, trend charts
         </button>
-        <button class="prompt-chip" data-prompt="Write an Excel formula to calculate total sum where quantity exceeds threshold.">
-          ⚡ Generate a conditional calculation formula
+        <button class="prompt-chip" data-prompt="Analyze the active worksheet. Highlight negative variances, compute efficiency %, and generate a variance summary table.">
+          🎯 <strong>Textile / RMG Planning:</strong> Variance, efficiency &amp; risk audit
         </button>
-        <button class="prompt-chip" data-prompt="Explain the formula in the active cell step-by-step.">
-          🔍 Explain the active cell's formula
+        <button class="prompt-chip" data-prompt="Scan for duplicate orders or duplicate rows in this sheet and create an Audit Report.">
+          🔍 <strong>Data Audit:</strong> Detect duplicates, missing data &amp; anomalies
         </button>
       </div>
     </div>
@@ -77,12 +79,12 @@
   <!-- Input Area -->
   <footer class="input-section">
     <div class="input-box">
-      <textarea id="userInput" placeholder="Ask ASIF AI about your Excel data or formulas..."></textarea>
+      <textarea id="userInput" placeholder="Instruct ASIF AI (e.g. 'Create Management Summary with charts')..."></textarea>
       <div class="input-footer">
         <div class="model-tag">
-          <span>✨</span> Gridex Smart
+          <span>✨</span> Gridex Smart <span id="agentModeIndicator" class="agent-mode-tag">AGENT ACTIVE</span>
         </div>
-        <button id="btnSend" class="btn-send" title="Send message" disabled>
+        <button id="btnSend" class="btn-send" title="Execute command" disabled>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
             <polyline points="5 12 12 5 19 12"></polyline>
