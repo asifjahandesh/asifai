@@ -159,9 +159,14 @@ Output format requirement:
 
 Rules for Actions:
 - For "create_worksheet", specify "worksheet": "New Sheet Name".
-- For "write_range", provide "values" and/or "formulas" as 2D arrays matching the "address". You can use standard Excel formulas (e.g. "=SUM(C5:C15)", "=AVERAGE(D5:D15)", "=C5-D5").
+- For "write_range", CRITICAL DIMENSION RULE: The 2D array of "values" or "formulas" MUST match the exact row and column dimensions of the target "address".
+  * For example, if "address": "A1:B1", the array MUST be exactly 1 row by 2 columns: [["Buyer", "Plan Qty"]].
+  * If "address": "A2:B2", the array MUST have 1 row and 2 columns: [["H&M", 45000]].
+  * If writing a single cell e.g. "B2", use "address": "B2" and an array of [[ "=SUM(...)" ]].
+  * NEVER write a 1-column array like [["H&M"]] into a multi-column range like "A2:B2". If "values" has 1 column, use single-column address "A2:A2" or "A2".
 - For KPIs, write KPI cards with clear metric names and calculated sums or ratios.
 - For summary reports, write clean tables with titles, bold headers, dark or styled header fills, proper number formatting, and total rows.
+- When generating reports from actual source worksheets (e.g. Buyer Plan Qty), use the source sheet's actual buyer names and quantities from the sample data provided, or use valid Excel formulas referencing the source sheet (e.g. "=SUMIF('Order Sheet'!A:A, A2, 'Order Sheet'!F:F)").
 - For "create_chart", use valid Excel chartTypes: "ColumnClustered", "Line", "Pie", "BarClustered".
 ` : `### CHAT & FORMULA ASSISTANT MODE:
 1. Provide concise, highly accurate, professional responses.

@@ -105,7 +105,7 @@ function showNotification(text, type = "error") {
   notificationArea.innerHTML = `<div class="notification ${type}">${escapeHtml(text)}</div>`;
   setTimeout(() => {
     notificationArea.innerHTML = "";
-  }, 6000);
+  }, 7000);
 }
 
 function escapeHtml(str) {
@@ -162,6 +162,84 @@ function showCustomConfirmModal({ title, message, details, confirmLabel = "Confi
     btnConfirm.addEventListener("click", () => cleanup(true));
     btnCancel.addEventListener("click", () => cleanup(false));
   });
+}
+
+// -------------------------------------------------------------
+// Excel Coordinate & Dimension Utilities (Strict Dimension Math)
+// -------------------------------------------------------------
+
+function colLetterToNumber(letters) {
+  let col = 0;
+  for (let i = 0; i < letters.length; i++) {
+    col = col * 26 + (letters.charCodeAt(i) - 64);
+  }
+  return col; // 1-indexed
+}
+
+function numberToColLetter(colNum) {
+  let temp = colNum;
+  let letter = "";
+  while (temp > 0) {
+    const rem = (temp - 1) % 26;
+    letter = String.fromCharCode(65 + rem) + letter;
+    temp = Math.floor((temp - 1) / 26);
+  }
+  return letter;
+}
+
+// Calculate the exact target range address starting from a top-left cell
+function computeDynamicRange(startAddress, rowCount, colCount) {
+  if (rowCount <= 0 || colCount <= 0) return startAddress;
+
+  const cleanAddr = startAddress.replace(/\$/g, "");
+  const parts = cleanAddr.split(":");
+  const topCell = parts[0].trim();
+
+  const match = topCell.match(/^([A-Za-z]+)(\d+)$/);
+  if (!match) return startAddress;
+
+  const startColLetters = match[1].toUpperCase();
+  const startRow = parseInt(match[2], 10);
+  const startColNum = colLetterToNumber(startColLetters);
+
+  const endRowNum = startRow + rowCount - 1;
+  const endColNum = startColNum + colCount - 1;
+  const endColLetters = numberToColLetter(endColNum);
+
+  return `${startColLetters}${startRow}:${endColLetters}${endRowNum}`;
+}
+
+// Validate that an input is a valid, rectangular 2D array and calculate dimensions
+function inspectAndValidate2DArray(arr, name = "array") {
+  if (!arr) return null;
+  if (!Array.isArray(arr) || arr.length === 0) {
+    throw new Error(`The input for ${name} must be a non-empty 2D array.`);
+  }
+
+  // If passed 1D array by mistake, wrap it
+  if (!Array.isArray(arr[0])) {
+    arr = [arr];
+  }
+
+  const rowCount = arr.length;
+  const colCount = arr[0].length;
+
+  if (colCount === 0) {
+    throw new Error(`The input for ${name} has 0 columns in row 1.`);
+  }
+
+  for (let r = 0; r < rowCount; r++) {
+    if (!Array.isArray(arr[r])) {
+      throw new Error(`Row ${r + 1} in ${name} is not an array.`);
+    }
+    if (arr[r].length !== colCount) {
+      throw new Error(
+        `Inconsistent dimensions in ${name}: Row 1 has ${colCount} columns, but Row ${r + 1} has ${arr[r].length} columns.`
+      );
+    }
+  }
+
+  return { rowCount, colCount, normalizedArray: arr };
 }
 
 // 1. Workbook Intelligence Engine (Scan Entire Workbook & Worksheets)
@@ -263,8 +341,8 @@ async function scanWorkbookContext(notify = false) {
   }
 }
 
-// 2. Action Engine: Execute Plan through Office.js sequentially
-async function executeActionPlan(actionPlan, planCardEl) {
+// 2. Action Engine: Execute Plan through Office.js sequentially with strict dimension math
+async function executeActionPlan(actionPlan, planCardEl, startIndex = 0) {
   if (!actionPlan || !actionPlan.actions || !Array.isArray(actionPlan.actions)) {
     showNotification("No actionable steps found in plan.", "error");
     return;
@@ -293,116 +371,184 @@ async function executeActionPlan(actionPlan, planCardEl) {
   };
 
   try {
-    for (let i = 0; i < actionPlan.actions.length; i++) {
+    for (let i = startIndex; i < actionPlan.actions.length; i++) {
       const act = actionPlan.actions[i];
       updateStepStatus(i, "in-progress");
 
-      await Excel.run(async (context) => {
-        const sheets = context.workbook.worksheets;
+      try {
+        await Excel.run(async (context) => {
+          const sheets = context.workbook.worksheets;
 
-        if (act.type === "create_worksheet") {
-          const sheetName = act.worksheet || "Summary";
-          // Check if worksheet exists
-          const existingSheet = sheets.getItemOrNullObject(sheetName);
-          await context.sync();
+          if (act.type === "create_worksheet") {
+            const sheetName = act.worksheet || "Summary";
+            const existingSheet = sheets.getItemOrNullObject(sheetName);
+            await context.sync();
 
-          if (!existingSheet.isNullObject) {
-            // Sheet already exists: activate it or prompt
-            existingSheet.activate();
-          } else {
-            const newSheet = sheets.add(sheetName);
-            newSheet.activate();
-          }
-          await context.sync();
-        } else if (act.type === "write_range") {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          const range = sheet.getRange(act.address);
+            if (!existingSheet.isNullObject) {
+              existingSheet.activate();
+            } else {
+              const newSheet = sheets.add(sheetName);
+              newSheet.activate();
+            }
+            await context.sync();
+          } else if (act.type === "write_range") {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
 
-          if (act.values && act.values.length > 0) {
-            range.values = act.values;
-          }
-          if (act.formulas && act.formulas.length > 0) {
-            range.formulas = act.formulas;
-          }
+            // Validate values array dimensions if provided
+            let valuesInspection = null;
+            if (act.values && act.values.length > 0) {
+              valuesInspection = inspectAndValidate2DArray(act.values, `values for ${act.address}`);
+              act.values = valuesInspection.normalizedArray;
+            }
 
-          // Apply cell styling if specified
-          if (act.format) {
-            if (act.format.bold !== undefined) range.format.font.bold = act.format.bold;
-            if (act.format.fontSize) range.format.font.size = act.format.fontSize;
-            if (act.format.fontColor) range.format.font.color = act.format.fontColor;
-            if (act.format.fillColor) range.format.fill.color = act.format.fillColor;
-            if (act.format.horizontalAlignment) range.format.horizontalAlignment = act.format.horizontalAlignment;
-            if (act.format.numberFormat) range.numberFormat = [[act.format.numberFormat]];
-          }
+            // Validate formulas array dimensions if provided
+            let formulasInspection = null;
+            if (act.formulas && act.formulas.length > 0) {
+              formulasInspection = inspectAndValidate2DArray(act.formulas, `formulas for ${act.address}`);
+              act.formulas = formulasInspection.normalizedArray;
+            }
 
-          await context.sync();
-        } else if (act.type === "format_range") {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          const range = sheet.getRange(act.address);
+            // Determine data dimensions
+            const dataRows = valuesInspection ? valuesInspection.rowCount : formulasInspection ? formulasInspection.rowCount : 0;
+            const dataCols = valuesInspection ? valuesInspection.colCount : formulasInspection ? formulasInspection.colCount : 0;
 
-          if (act.format) {
-            if (act.format.bold !== undefined) range.format.font.bold = act.format.bold;
-            if (act.format.fontSize) range.format.font.size = act.format.fontSize;
-            if (act.format.fontColor) range.format.font.color = act.format.fontColor;
-            if (act.format.fillColor) range.format.fill.color = act.format.fillColor;
-            if (act.format.horizontalAlignment) range.format.horizontalAlignment = act.format.horizontalAlignment;
-            if (act.format.numberFormat) range.numberFormat = [[act.format.numberFormat]];
-          }
-          await context.sync();
-        } else if (act.type === "create_table") {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          const range = sheet.getRange(act.address);
-          sheet.tables.add(range, true /* hasHeaders */);
-          await context.sync();
-        } else if (act.type === "autofit") {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          if (act.address) {
-            sheet.getRange(act.address).format.autofitColumns();
-          } else {
-            sheet.getUsedRange().format.autofitColumns();
-          }
-          await context.sync();
-        } else if (act.type === "create_chart" && act.chart) {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          const dataRange = sheet.getRange(act.chart.dataRange);
-          const chartType = act.chart.chartType || "ColumnClustered";
+            if (dataRows === 0 || dataCols === 0) {
+              throw new Error(`Action write_range on ${act.address} contains neither values nor formulas.`);
+            }
 
-          const chart = sheet.charts.add(chartType, dataRange, "Auto");
-          if (act.chart.title) chart.title.text = act.chart.title;
-          if (act.chart.position) {
-            chart.setPosition(act.chart.position, null, null);
-          }
-          if (act.chart.width) chart.width = act.chart.width;
-          if (act.chart.height) chart.height = act.chart.height;
-
-          await context.sync();
-        } else if (act.type === "highlight_variance") {
-          const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
-          const range = sheet.getRange(act.address);
-          range.load(["values", "rowCount", "columnCount"]);
-          await context.sync();
-
-          // Highlight negative values in red
-          for (let r = 0; r < range.rowCount; r++) {
-            for (let c = 0; c < range.columnCount; c++) {
-              const val = range.values[r][c];
-              if (typeof val === "number" && val < 0) {
-                const cell = range.getCell(r, c);
-                cell.format.font.color = "#dc2626";
-                cell.format.fill.color = "#fee2e2";
+            if (valuesInspection && formulasInspection) {
+              if (valuesInspection.rowCount !== formulasInspection.rowCount || valuesInspection.colCount !== formulasInspection.colCount) {
+                throw new Error(
+                  `Dimension mismatch in write_range: values are ${valuesInspection.rowCount}x${valuesInspection.colCount} but formulas are ${formulasInspection.rowCount}x${formulasInspection.colCount}.`
+                );
               }
             }
-          }
-          await context.sync();
-        }
-      });
 
-      updateStepStatus(i, "completed");
+            // Compute exact dynamic target range matching data dimensions
+            const targetAddress = computeDynamicRange(act.address, dataRows, dataCols);
+            const range = sheet.getRange(targetAddress);
+            range.load(["rowCount", "columnCount"]);
+            await context.sync();
+
+            // Strict dimension verification against the Excel Range object
+            if (range.rowCount !== dataRows || range.columnCount !== dataCols) {
+              throw new Error(
+                `Range dimension mismatch on ${targetAddress}: Excel allocated ${range.rowCount} rows x ${range.columnCount} cols, but input data has ${dataRows} rows x ${dataCols} cols.`
+              );
+            }
+
+            if (valuesInspection) {
+              range.values = valuesInspection.normalizedArray;
+            }
+            if (formulasInspection) {
+              range.formulas = formulasInspection.normalizedArray;
+            }
+
+            // Apply formatting safely
+            if (act.format) {
+              if (act.format.bold !== undefined) range.format.font.bold = act.format.bold;
+              if (act.format.fontSize) range.format.font.size = act.format.fontSize;
+              if (act.format.fontColor) range.format.font.color = act.format.fontColor;
+              if (act.format.fillColor) range.format.fill.color = act.format.fillColor;
+              if (act.format.horizontalAlignment) range.format.horizontalAlignment = act.format.horizontalAlignment;
+              if (act.format.numberFormat) {
+                range.numberFormat = Array(dataRows).fill(null).map(() => Array(dataCols).fill(act.format.numberFormat));
+              }
+            }
+
+            await context.sync();
+          } else if (act.type === "format_range") {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
+            const range = sheet.getRange(act.address);
+            range.load(["rowCount", "columnCount"]);
+            await context.sync();
+
+            if (act.format) {
+              if (act.format.bold !== undefined) range.format.font.bold = act.format.bold;
+              if (act.format.fontSize) range.format.font.size = act.format.fontSize;
+              if (act.format.fontColor) range.format.font.color = act.format.fontColor;
+              if (act.format.fillColor) range.format.fill.color = act.format.fillColor;
+              if (act.format.horizontalAlignment) range.format.horizontalAlignment = act.format.horizontalAlignment;
+              if (act.format.numberFormat) {
+                range.numberFormat = Array(range.rowCount).fill(null).map(() => Array(range.columnCount).fill(act.format.numberFormat));
+              }
+            }
+            await context.sync();
+          } else if (act.type === "create_table") {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
+            const range = sheet.getRange(act.address);
+            sheet.tables.add(range, true /* hasHeaders */);
+            await context.sync();
+          } else if (act.type === "autofit") {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
+            if (act.address) {
+              sheet.getRange(act.address).format.autofitColumns();
+            } else {
+              sheet.getUsedRange().format.autofitColumns();
+            }
+            await context.sync();
+          } else if (act.type === "create_chart" && act.chart) {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
+            const dataRange = sheet.getRange(act.chart.dataRange);
+            const chartType = act.chart.chartType || "ColumnClustered";
+
+            const chart = sheet.charts.add(chartType, dataRange, "Auto");
+            if (act.chart.title) chart.title.text = act.chart.title;
+            if (act.chart.position) {
+              chart.setPosition(act.chart.position, null, null);
+            }
+            if (act.chart.width) chart.width = act.chart.width;
+            if (act.chart.height) chart.height = act.chart.height;
+
+            await context.sync();
+          } else if (act.type === "highlight_variance") {
+            const sheet = act.worksheet ? sheets.getItem(act.worksheet) : sheets.getActiveWorksheet();
+            const range = sheet.getRange(act.address);
+            range.load(["values", "rowCount", "columnCount"]);
+            await context.sync();
+
+            for (let r = 0; r < range.rowCount; r++) {
+              for (let c = 0; c < range.columnCount; c++) {
+                const val = range.values[r][c];
+                if (typeof val === "number" && val < 0) {
+                  const cell = range.getCell(r, c);
+                  cell.format.font.color = "#dc2626";
+                  cell.format.fill.color = "#fee2e2";
+                }
+              }
+            }
+            await context.sync();
+          }
+        });
+
+        updateStepStatus(i, "completed");
+      } catch (stepErr) {
+        // Mark failed step and halt dependent execution
+        updateStepStatus(i, "failed", `Failed at action ${i + 1} (${act.type}): ${stepErr.message}`);
+        
+        // Show Retry button from failed step
+        const actionArea = planCardEl.querySelector(".plan-actions");
+        if (actionArea) {
+          actionArea.innerHTML = `
+            <button id="btnRetryPlan" class="btn-execute-plan" style="background: #f59e0b; color: #000;">
+              <span>🔄</span> Retry from Action ${i + 1}
+            </button>
+            <button id="btnDismissPlan" class="btn-cancel-plan">Dismiss</button>
+          `;
+          actionArea.querySelector("#btnRetryPlan").addEventListener("click", () => {
+            executeActionPlan(actionPlan, planCardEl, i);
+          });
+          actionArea.querySelector("#btnDismissPlan").addEventListener("click", () => {
+            planCardEl.remove();
+          });
+        }
+
+        throw new Error(`Step ${i + 1} (${act.type} on ${act.address || act.worksheet || ""}) failed: ${stepErr.message}`);
+      }
     }
 
     showNotification("All planned Excel operations completed successfully!", "success");
 
-    // Replace Execute button with Completed status
     const actionArea = planCardEl.querySelector(".plan-actions");
     if (actionArea) {
       actionArea.innerHTML = `<div style="color: var(--text-neon); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;">✅ Actions successfully executed in Excel.</div>`;
@@ -410,7 +556,7 @@ async function executeActionPlan(actionPlan, planCardEl) {
 
     await scanWorkbookContext(false);
   } catch (err) {
-    showNotification(`Execution stopped: ${err.message || err}`, "error");
+    showNotification(err.message || "Execution stopped due to an error.", "error");
   } finally {
     isBusy = false;
     btnSend.disabled = !userInput.value.trim();
@@ -468,7 +614,7 @@ function renderActionPlan(actionPlan) {
         return;
       }
     }
-    executeActionPlan(actionPlan, card);
+    executeActionPlan(actionPlan, card, 0);
   });
 
   btnCancel.addEventListener("click", () => {
