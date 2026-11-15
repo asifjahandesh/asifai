@@ -458,3 +458,129 @@ textarea#userInput {
   border: 1px solid rgba(34, 197, 94, 0.6);
   color: #86efac;
 }
+
+.notification.info {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+}
+
+/* Confirmation Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal-content {
+  background: #0b120e;
+  border: 1px solid var(--accent-green);
+  border-radius: 14px;
+  padding: 18px;
+  width: 100%;
+  max-width: 340px;
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-icon {
+  font-size: 18px;
+  color: #fbbf24;
+}
+
+.modal-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: 0.05em;
+}
+
+.modal-body {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-target-cell {
+  background: #040806;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 11px;
+}
+
+.modal-target-label {
+  color: var(--text-subtle);
+  font-size: 9.5px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.modal-target-value {
+  color: #f87171;
+  word-break: break-all;
+}
+
+.modal-new-value {
+  color: var(--text-neon);
+  word-break: break-all;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-btn-confirm {
+  background: var(--accent-green);
+  color: #000;
+}
+
+.modal-btn-confirm:hover {
+  background: var(--accent-green-hover);
+}
+
+.modal-btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+
+.modal-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-heading);
+}

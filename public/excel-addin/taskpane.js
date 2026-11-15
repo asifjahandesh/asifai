@@ -82,6 +82,56 @@ function startNewChat() {
   showNotification("New conversation started.", "success");
 }
 
+// Custom Modal Dialog for Excel Task Pane (replaces unsupported window.confirm)
+function showCustomConfirmModal({ address, existingValue, newFormula }) {
+  return new Promise((resolve) => {
+    const existingModal = document.getElementById("asifConfirmModal");
+    if (existingModal) existingModal.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "asifConfirmModal";
+    overlay.className = "modal-overlay";
+
+    overlay.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-icon">⚠️</span>
+          <span class="modal-title">Overwrite Existing Content?</span>
+        </div>
+        <div class="modal-body">
+          <p>Cell <strong>${escapeHtml(address)}</strong> already contains data or a formula.</p>
+          <div class="modal-target-cell">
+            <div class="modal-target-label">Current Content</div>
+            <div class="modal-target-value">${escapeHtml(String(existingValue))}</div>
+          </div>
+          <div class="modal-target-cell">
+            <div class="modal-target-label">New Formula</div>
+            <div class="modal-new-value">${escapeHtml(newFormula)}</div>
+          </div>
+          <p>Do you want to overwrite it?</p>
+        </div>
+        <div class="modal-actions">
+          <button id="modalBtnCancel" class="modal-btn modal-btn-cancel">Cancel</button>
+          <button id="modalBtnConfirm" class="modal-btn modal-btn-confirm">Insert Formula</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const btnConfirm = overlay.querySelector("#modalBtnConfirm");
+    const btnCancel = overlay.querySelector("#modalBtnCancel");
+
+    const cleanup = (result) => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    btnConfirm.addEventListener("click", () => cleanup(true));
+    btnCancel.addEventListener("click", () => cleanup(false));
+  });
+}
+
 // 1. Read Excel Selection using Excel JavaScript API
 async function readActiveSelection(notify = false) {
   if (typeof Excel === "undefined") {
@@ -181,29 +231,59 @@ async function insertFormulaIntoCell(formulaText) {
   }
 
   try {
+    // Format formula cleanly
+    let cleanFormula = formulaText.trim();
+    if (!cleanFormula.startsWith("=")) cleanFormula = "=" + cleanFormula;
+
+    // Step 1: Inspect the selected cell first
+    let cellInfo = null;
     await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRange();
       range.load(["address", "values", "formulas"]);
       await context.sync();
 
-      // Check if target already has content
-      const existing = range.values[0][0];
-      if (existing !== "" && existing != null) {
-        const confirmOverwrite = confirm(
-          `Cell ${range.address} already contains "${existing}". Overwrite with formula: ${formulaText}?`
-        );
-        if (!confirmOverwrite) return;
-      }
+      const existingVal = range.values[0] ? range.values[0][0] : null;
+      const existingFormula = range.formulas[0] ? range.formulas[0][0] : null;
+      const isOccupied =
+        (existingFormula && typeof existingFormula === "string" && existingFormula.trim() !== "") ||
+        (existingVal !== "" && existingVal != null);
 
-      // Ensure starts with =
-      let cleanFormula = formulaText.trim();
-      if (!cleanFormula.startsWith("=")) cleanFormula = "=" + cleanFormula;
-
-      range.formulas = [[cleanFormula]];
-      await context.sync();
-
-      showNotification(`Successfully inserted formula ${cleanFormula} into ${range.address}!`, "success");
+      cellInfo = {
+        address: range.address,
+        isOccupied: isOccupied,
+        displayValue: existingFormula || existingVal,
+      };
     });
+
+    if (!cellInfo) {
+      showNotification("Could not inspect active cell.", "error");
+      return;
+    }
+
+    // Step 2: If occupied, show task pane confirmation modal
+    if (cellInfo.isOccupied) {
+      const userApproved = await showCustomConfirmModal({
+        address: cellInfo.address,
+        existingValue: cellInfo.displayValue,
+        newFormula: cleanFormula,
+      });
+
+      if (!userApproved) {
+        showNotification("Formula insertion cancelled.", "info");
+        return;
+      }
+    }
+
+    // Step 3: Insert the approved formula into the active cell
+    await Excel.run(async (context) => {
+      const range = context.workbook.getSelectedRange();
+      range.formulas = [[cleanFormula]];
+      range.select();
+      await context.sync();
+    });
+
+    showNotification(`Inserted formula ${cleanFormula} into ${cellInfo.address}!`, "success");
+    await readActiveSelection(false);
   } catch (err) {
     showNotification(`Error inserting formula: ${err.message || err}`, "error");
   }
